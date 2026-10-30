@@ -1,61 +1,207 @@
-# Revit Family Creator UI
+# Revit Family Creator
 
-An open-source, MIT-licensed Revit add-in with an Add-Ins ribbon panel and **Family Creator** button opening one modeless WPF window. Repeated clicks activate the existing window; closing it allows a fresh window next time. The window is owned by Revit and closes during add-in shutdown.
+An open-source Revit 2027 add-in for turning product references into a geometry preview, then creating and loading a family directly into a project. The interface opens from **Add-Ins → Family Creator**.
 
-The first-run welcome screen offers **Log in with ChatGPT** above **Use API key**, keeping the existing navy styling. The login button starts browser sign-in; the API-key button opens key setup. **Other connection options** returns to the welcome screen. ChatGPT includes saved accounts, cancellation, status and sign-out. API-key mode includes masked entry, encrypted save/replace, a connection check and local removal. API-key generation now supports reference inputs, native geometry preview and explicit family creation/loading. ChatGPT sign-in is not connected to generation yet.
+**Current status:** API-key generation, reference attachments, model selection, native geometry preview and family loading are implemented. ChatGPT browser sign-in is available, but **does not yet support generation**. Live AI generation requires an OpenAI API key with model access and available credits. No Dynamo installation or graph is required.
 
-To use an API key: choose **Use API key**, paste your own key into the masked field, click **Save key**, then **Test connection**. The check uses the models-list endpoint only and does not verify model-generation permission or billing balance. Key removal clears the local copy; revoke the key in OpenAI Platform if needed. Neither method silently falls back to the other.
+## Installation
 
-## Conversation workspace
+### Requirements
 
-After sign-in or saving/checking an API key, the window opens the conversation workspace. Later launches open it directly when the selected saved credential is available (a saved key is not a guarantee of API access). The top-right **Settings** button returns to connection settings; **Back to conversation** preserves the current draft. Expired/signed-out ChatGPT sessions and missing API keys stay on connection setup. The composer accepts multiline text and pasted product details at the bottom, while the response area scrolls above it. The workspace supports narrow windows down to 420 units wide; settings use the wider form layout.
+- Windows with Autodesk Revit **2027** installed. Other Revit versions are not supported by this build.
+- **.NET 10 SDK** to build the add-in; the runtime alone is insufficient.
+- **PowerShell 7** to run the installer.
+- Git to clone the repository, or an extracted copy of the repository ZIP.
+- An installed **non-hosted Generic Model family template** (`.rft`) for family creation.
+- Internet access for restoring NuGet packages and using OpenAI services.
 
-Click the model chip beneath the composer to open the styled model picker. Search readable model names or exact API IDs, select a card, and choose **Use model**. Your saved model is marked **In use**. Manual ID entry is available under an expander, including when the catalog cannot be loaded. Attach references with **+**, describe the family, and press **Enter** or Send. **Shift+Enter** inserts a new line. The composer explains why Send is disabled when a connection, model or prompt is missing. The model must support Responses and structured outputs, plus image/PDF inputs when used. The app remembers the model ID without selecting or substituting one automatically. Send transmits the prompt, conversation context, previous recipe and currently attached files to OpenAI; API charges apply. Cancel stops waiting but cannot undo usage already incurred.
+For AI generation, you also need your own OpenAI API key, available API credits and a model supporting Responses and structured outputs. Image/PDF references additionally require compatible input support. A successful sign-in or model-list check does not establish generation access or billing balance.
 
-The bundled workflow interprets references and generates a validated geometry recipe. Revit builds native solid lofts without modifying the project, then the extension displays their tessellation. Drag to orbit, scroll to zoom, or use arrow and plus/minus keys. Inspect dimensions, proportions and joints; request revisions in the conversation. A failed revision disables creation of the previous preview.
+### Build and install from source
 
-Click **Create family** after reviewing the preview. Choose category, family name and type name, with suggested defaults. An installed non-hosted Generic Model template is required; the dialog finds the standard English template or lets you select one. The add-in builds one family/type in a temporary document, applies colors and loads it directly into the project. No output RFA or Dynamo graph is saved. Save the project to retain the family, then place it using Revit's normal tools. Existing family names are rejected instead of overwritten; changing the active project requires a fresh preview.
+1. Save your work and close Revit.
+2. Open **PowerShell 7** and clone the repository:
 
-Initial support: native freeform solids made from circular/polygonal loft profiles, in non-hosted Generic Models, Furniture, Furniture Systems, Specialty Equipment, Mechanical Equipment, Plumbing Fixtures or Electrical Equipment categories. These are not dimensionally parametric families. Voids/cuts, connectors, hosted doors/windows, and automatic visual comparison are not implemented. The model labels approximations; native validity does not establish fidelity to the product. Product URLs are not fetched automatically: attach the source or paste its contents.
+   ```powershell
+   git clone https://github.com/sdg-xs/revit-AI-driven-family-creator-plug-in.git
+   cd revit-AI-driven-family-creator-plug-in
+   ```
 
-Drafts, references and conversation context survive Settings navigation but are not saved after closing. **New chat** clears the current conversation and preview.
+   If you downloaded a ZIP, extract it and open PowerShell in the extracted repository folder instead.
 
-## Build and install
+3. Check that the required SDK is installed, then run the installer:
 
-Requires Windows, .NET 10 SDK and installed Revit 2027 APIs.
+   ```powershell
+   dotnet --list-sdks
+   .\deploy\install.ps1
+   ```
+
+   The SDK list must include a `10.x` version. The installation script builds the Release configuration, checks the result, copies the add-in and its dependencies, and writes the Revit add-in manifest. It stops if the build fails.
+
+4. Start Revit 2027. If Revit displays an unsigned-add-in prompt, review **Family Creator** and choose whether to load this local build.
+5. Open an editable project and click **Add-Ins → Family Creator**.
+
+The installation is per Windows user. Files are installed under:
+
+```text
+%APPDATA%\Autodesk\Revit\Addins\2027\FamilyCreator.addin
+%APPDATA%\Autodesk\Revit\Addins\2027\FamilyCreator\build-<hash>\
+```
+
+The project expects Revit at `C:\Program Files\Autodesk\Revit 2027`. For a different installation location, set `RevitInstallDir` in the same PowerShell session before running the installer:
 
 ```powershell
-dotnet build .\src\FamilyCreator.Revit\FamilyCreator.Revit.csproj -c Release
+$env:RevitInstallDir = 'D:\Autodesk\Revit 2027'
 .\deploy\install.ps1
 ```
 
-Run the installer in PowerShell 7. It copies the add-in and authentication dependencies into a content-versioned folder beneath `%APPDATA%\Autodesk\Revit\Addins\2027\FamilyCreator` and writes `FamilyCreator.addin` beside it. It does not copy Autodesk DLLs or overwrite an older loaded build. Save your work and restart Revit to load the update if it is already running. Revit may ask you to review the unsigned local add-in on first launch.
+Use your actual installation directory. Autodesk API DLLs are referenced from that directory and are not distributed with this repository.
 
-## Verification
+If your organization blocks PowerShell scripts, use its approved execution method or contact your administrator; installation does not require changing machine-wide execution policy.
 
-On 2026-10-30, Release build passed with zero warnings and zero errors against installed Revit 2027 API assemblies. Automated tests passed (69 cases), including authentication, encrypted key storage and selected-credential workspace access. WPF smoke checks cover both connection choices, narrow/normal conversation layouts, settings navigation, draft preservation and credential removal. The user reported a successful live API-key connection check. A live GPT-6.1 Sol request was attempted: the provider rejected it with HTTP 429 and explicitly reported no credits remaining. This account limitation must be resolved before live generation can succeed; model listing alone does not prove available generation credits. The WPF harness also covers Enter submission, generation success/failure, preview rendering, model-picker rendering, the creation dialog and stale-preview invalidation. The native Revit test passed cylinder/bent-tube geometry, unsaved family loading, final family/type names, single-type output, material colors and duplicate-name protection. Native Revit verification is recorded separately in docs/preview-create-load.md.
+### Updating
+
+Save your work and close Revit, then run these commands from the repository folder:
 
 ```powershell
-dotnet test .\tests\FamilyCreator.Auth.Tests -c Release
+git pull --ff-only
+.\deploy\install.ps1
 ```
 
-See [authentication notes](docs/authentication.md) for storage, supported scope and manual acceptance steps. Credentials are encrypted for the Windows user under `%LOCALAPPDATA%\FamilyCreator\Auth`, outside the repository. Existing Codex/ChatGPT credentials are not read or reused.
+Reopen Revit to load the new build. The installer uses versioned folders and updates one manifest; it does not replace a DLL already loaded into a running Revit process. Older build folders do not create additional ribbon extensions.
 
-Live acceptance checklist:
+### Uninstalling
 
-- [ ] Start Revit 2027 and verify Add-Ins > Family Creator panel/button appears.
-- [ ] Click Family Creator and verify the window is displayed and owned by Revit.
-- [ ] Click again: the same window comes forward, with no duplicate.
-- [ ] Close and reopen; minimize and click again to restore.
-- [ ] Keep the window open while opening/closing a project; the shell remains usable.
-- [ ] Close Revit normally and verify the owned window closes.
+Close Revit and remove **only** `FamilyCreator.addin` from the installation folder above. You can also remove the adjacent `FamilyCreator` directory to reclaim its build files. Leave other add-ins and their manifests untouched.
 
-- [ ] Complete a real OpenAI browser sign-in, confirm account identity, then test cancellation and sign-out.
+Uninstalling does not erase saved credentials. To remove them through the app, use **Settings → Remove key** and/or **Sign out** before uninstalling. Local removal of an API key does not revoke the key at OpenAI; revoke it in your OpenAI account if needed. To erase all local Family Creator settings after closing the app, remove `%LOCALAPPDATA%\FamilyCreator`.
 
-Revit geometry and family operations run through ExternalEvent. Temporary family documents use transactions and close without saving; the project must be editable with no active transaction.
+## First-run setup
+
+1. Open **Add-Ins → Family Creator** and choose **Use API key**.
+2. Paste your key into the masked field and click **Save key**. The app opens the conversation workspace.
+3. Open **Settings** and use **Test connection** if you want to check model-list access. Use **Back to conversation** to return. This test does not check generation credits or model-generation permission.
+4. Click the **model chip** below the prompt. Search the available models, select a card, and click **Use model**. The saved choice is marked **In use**. You can enter an exact ID under **Enter a model ID manually** if necessary.
+
+Create/manage keys in [OpenAI API keys](https://platform.openai.com/api-keys). Check credits in [OpenAI API billing](https://platform.openai.com/settings/organization/billing/); a billing link is also available in connection settings.
+
+Saved connections open directly into the workspace on later launches. The app remembers your selected model without automatically choosing or substituting one. Model-list access does not guarantee that every listed model supports this workflow.
+
+**ChatGPT sign-in:** **Settings → Other connection options → Log in with ChatGPT** starts browser authentication. This currently supports account connection only. It cannot replace the API key for generation, and organization/account policy may deny access. The app does not bypass that policy or silently switch credentials.
+
+## Creating a family
+
+### 1. Open a project and attach references
+
+Start from an editable Revit **project**, not a family document. Finish any active Revit command or modal dialog before generating.
+
+Use **+** beside the prompt to select product images, drawings, PDFs or text specifications. Each attachment has a remove button. Supported files:
+
+| References | Formats |
+| --- | --- |
+| Images | PNG, JPG/JPEG, WEBP, GIF |
+| Documents | PDF, TXT, Markdown (`.md`) |
+
+Limits are **10 attachments**, **10 MB per file**, **20 MB total**, and **256 KB per text file**. The selected model must support the supplied inputs. References stay local until you press Send. Product links are not fetched automatically: attach the source document/image or paste its relevant contents.
+
+### 2. Describe the family and send
+
+Give known dimensions, units, materials and the features that matter. For example:
+
+> Create a freestanding side table from the attached drawing. Overall size: 600 mm wide, 400 mm deep, 500 mm high. Use a 25 mm oak-colored top and four black cylindrical legs, 30 mm in diameter. Show a preview before creating the family.
+
+- **Enter** or the **↑ Send button** submits the request.
+- **Shift+Enter** inserts a new line.
+- **Cancel** stops waiting for the current request; usage already incurred may still be billed.
+- A hint below the composer explains why Send is disabled if a key, model or prompt is missing.
+
+Send shares the prompt, current reference files, conversation context and previous geometry recipe with OpenAI. API charges apply. If essential details are missing, the assistant may ask a question instead of producing geometry.
+
+### 3. Inspect and refine the preview
+
+The add-in builds native Revit solids without adding a family to the project, then renders their tessellation in the conversation.
+
+- Drag to orbit and scroll to zoom.
+- With the preview focused, arrow keys rotate and plus/minus keys zoom.
+- Check dimensions, proportions, connections and material colors.
+- Send a follow-up request to refine the design. Each revision produces a replacement preview; a failed revision disables creation of the previous preview.
+
+A valid solid does not prove that the model faithfully represents the reference. Inspect the geometry before creating it.
+
+### 4. Create and load
+
+Click **Create family…**, then choose:
+
+- **Category** from the supported model categories.
+- **Family name**, unique in the current project.
+- **Type name**, with a suggested value you can edit.
+
+The **Family template** expander lets you choose an installed non-hosted Generic Model `.rft`. The app finds standard English templates automatically when present. A common location is:
+
+```text
+C:\ProgramData\Autodesk\RVT 2027\Family Templates\English\Metric Generic Model.rft
+```
+
+Click **Create and load**. The add-in creates one family with one type, applies material colors, and loads it into the project. **No output `.rfa` file or Dynamo graph needs to be saved.** The temporary family document closes after loading.
+
+Place the loaded family using Revit's normal tools. **Save the project** to retain the family. If you later need a separate `.rfa`, save/export it through Revit's normal family workflow. The add-in does not automatically place an instance or overwrite an existing family.
+
+### Conversation and settings
+
+**Settings** opens connection management without losing the current draft or attachments. **New chat** clears the conversation, references and preview. Conversation history, drafts and attachments are not restored after closing the window. If you switch the active Revit project, generate a fresh preview before creating the family.
+
+## Supported scope
+
+The current backend creates **native freeform solids** from circular and polygonal loft profiles. It supports non-hosted Generic Models, Furniture, Furniture Systems, Specialty Equipment, Mechanical Equipment, Plumbing Fixtures and Electrical Equipment categories.
+
+These are not dimensionally parametric families. Hosted doors/windows, voids and boolean cuts, connectors, automatic reference-image comparison, and direct generation inside an existing family document are not implemented. The integrated workflow follows reference interpretation and assembly principles from `revit-family-creator`; the original standalone skill is not required at runtime.
+
+## Troubleshooting
+
+| Symptom | What to check |
+| --- | --- |
+| Family Creator is missing from Add-Ins | Confirm Revit 2027, the Windows user used for installation, and the manifest path. Run the installer successfully and restart Revit. Check whether the unsigned add-in was declined. |
+| The old interface still appears | Close all Revit processes and reopen. An already loaded assembly is not replaced by installation. |
+| Two extensions ask to load | Check the names on the prompts. The production installer registers only **Family Creator**. **Family Creator Native Smoke** is a developer-only test add-in; close its test instance and remove its temporary `FamilyCreator.NativeSmoke.addin` manifest if left behind. Do not remove unrelated extensions. |
+| Send is disabled | Save/select an API key, choose a model and enter a prompt. ChatGPT sign-in alone cannot generate. |
+| The model list cannot load | Check network access and the key's model-list permission. Manual ID entry remains available when the catalog request fails. |
+| HTTP 429 / no credits remaining | Check API billing, credits and project/model limits. A key may list models while having no generation credits. Add credits or resolve the reported limit, then retry. |
+| HTTP 400/404 or unsupported input | Check the exact model ID and its Responses, structured-output and image/PDF capabilities. |
+| Business ChatGPT sign-in is denied | Ask your workspace administrator or OpenAI support about third-party access eligibility. The add-in cannot override the policy. |
+| Revit asks for an editable project | Open a project, exit the Family Editor, finish active commands and close modal dialogs. |
+| A reference file cannot be read | Check that it still exists, is accessible, and meets the file-count/size limits. Remove and reattach it if needed. |
+| A part cannot form a native solid | Read the part-specific error, then request simpler geometry or corrected dimensions/profiles. No family is loaded from the invalid preview. |
+| No template is found | Install the appropriate Revit family content or select a non-hosted Generic Model `.rft` in the creation dialog. |
+| A family name already exists | Choose a new name. Existing project families are preserved. |
+
+## Privacy and local storage
+
+API keys and account tokens are protected with Windows-user DPAPI under `%LOCALAPPDATA%\FamilyCreator\Auth`, outside the repository. The selected model ID is stored in `%LOCALAPPDATA%\FamilyCreator\model.txt`. The app does not read or reuse Codex/ChatGPT desktop credentials.
+
+References are read when Send is pressed and included in the OpenAI request; the add-in does not persist copies of their contents locally. Requests use `store:false`, which is not a promise of zero provider retention. Review your OpenAI account's applicable data controls before submitting sensitive documents.
+
+## Development and verification
+
+Run from the repository root:
+
+```powershell
+dotnet build .\src\FamilyCreator.Revit -c Release
+dotnet test .\tests\FamilyCreator.Auth.Tests -c Release
+dotnet run --project .\tests\FamilyCreator.Ui.Smoke -c Release
+```
+
+As of 2026-10-30, the Release build has zero warnings/errors, 69 automated tests pass, and the standalone WPF harness verifies navigation, Enter submission, model-picker behavior and preview layouts. Native Revit checks passed cylinder/bent-tube geometry, unsaved family loading, final family/type names, single-type output, material colors and duplicate-name protection.
+
+A live GPT-6.1 Sol request was attempted but rejected because the test account had no API credits. Successful live AI generation has **not** been verified. Additional category and temporary-name conflict fixtures were prepared but not completed live. See the [verification record](docs/preview-create-load.md) for the exact scope.
+
+The `FamilyCreator.LiveCheck` and `FamilyCreator.Revit.NativeSmoke` projects are opt-in developer diagnostics, not normal installation steps. LiveCheck can make billable requests. NativeSmoke launches a separate Revit process and temporarily registers a test add-in; its manifest and test process must be cleaned up afterward.
+
+Additional documentation:
+
+- [Authentication and storage](docs/authentication.md)
+- [Preview/create/load architecture and verification](docs/preview-create-load.md)
+- [Interface design](docs/interface-design.md)
 
 ## License
 
 [MIT](LICENSE). Autodesk Revit and its API assemblies are separate prerequisites and are not distributed with this repository. OpenAI services retain their own eligibility and usage conditions.
-
-Reference attachments: the + button selects multiple local images, PDFs, or text/Markdown files. Selected references appear above the prompt with individual remove buttons. Duplicate paths are ignored, and references survive Settings navigation in the current window. Files stay local until Send, then are included in the model request. The app allows at most 10 attachments, 10 MB per file and 20 MB total; text files are limited to 256 KB. Missing/unsupported files are reported. File contents are not copied or persisted locally by the add-in.
