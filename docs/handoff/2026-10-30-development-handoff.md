@@ -11,7 +11,7 @@ This is the planning handoff for the existing ChatGPT Project “Revit Family Cr
 USER’S REQUESTED OUTCOME
 Integrate the existing revit-family-creator skill into local Revit. The desired experience is an Add-Ins ribbon button named Family Creator, opening a Revit window that offers official ChatGPT sign-in and uses only this skill. Inputs include FDVU/product specifications, manuals, images and product links; the workflow should support reviewing category, dimensions and materials, previewing geometry, and producing a reusable .rfa.
 
-Audience is unresolved: Steven alone, other Hemy users, or a broader distribution. Sign-in feasibility and eligibility are not yet confirmed for that audience. “Only this skill” is a requested behavior, not an implemented security boundary.
+Audience is unresolved: Steven alone, other organization users, or a broader distribution. Sign-in feasibility and eligibility are not yet confirmed for that audience. “Only this skill” is a requested behavior, not an implemented security boundary.
 
 RECOMMENDATIONS — NOT FINAL USER-APPROVED DESIGN
 Launch from an ordinary Revit project, create geometry in a separate family document, preview and save the .rfa, then optionally load it into the active project. Support Family Editor refinement later if needed. The user asked whether to run inside a project or a family; this is the recommendation, not a completed design decision.
@@ -40,7 +40,7 @@ VERIFIED LOCAL ENVIRONMENT — AUDITED 2026-10-30
 • Template exists: C:\ProgramData\Autodesk\RVT 2027\Family Templates\English\Metric Generic Model.rft.
 • Installed RevitAPIUI.xml documents IDockablePaneProvider, RegisterDockablePane, ExternalEvent, IExternalEventHandler and PreviewControl. API paths are under the Revit 2027 installation above.
 • Existing Autodesk MCP, another Revit MCP plugin, RevitLookup, analytics and USD add-ins were observed, but not exercised. The proposed native add-in need not depend on MCP.
-• No separate Family Creator UI project was found in the inspected project list/Development paths; discovery was not exhaustive. Optional future local folder: C:\Users\StevenGomba\OneDrive - HEMY AS\Desktop\Development\revit-family-creator-ui. It was not created; the user’s actual request was for this ChatGPT Project.
+• No separate Family Creator UI project was found in the inspected project list/Development paths; discovery was not exhaustive. Optional future local folder: [historical local development folder]. It was not created; the user’s actual request was for this ChatGPT Project.
 
 COMPATIBILITY AND VERIFICATION LIMITS
 Only the installed 2027.3 environment was inspected. Compatibility across all Revit 2027 releases is a target, not proven. Select the earliest supported API baseline and test relevant releases before claiming 2027-wide support.
@@ -50,7 +50,7 @@ The skill guidance records historical arc-order corrections: Dynamo uses start/m
 No end-to-end native family creation was performed during the audit. An independent illustration is not native-solid validation. Future checks must inspect actual per-part solids/bounds and relevant sections, as well as overall bounds, type count, materials, template/category, preview-only behavior and existing-file protection. Read implementation.md before adapting geometry. Follow applicable local AGENTS.md instructions, including the active-session development-model preference.
 
 AUTHENTICATION RESEARCH TO REVALIDATE BEFORE IMPLEMENTATION
-Prior research identified an official Sign in with ChatGPT (SIWC) route for third-party applications. Eligibility and distribution constraints must be checked for Steven-only, internal Hemy and any commercial use before choosing it. Do not state that an API key is the sole option or promise subscription authentication for every distribution.
+Prior research identified an official Sign in with ChatGPT (SIWC) route for third-party applications. Eligibility and distribution constraints must be checked for Steven-only, internal organization and any commercial use before choosing it. Do not state that an API key is the sole option or promise subscription authentication for every distribution.
 
 Use the official system-browser OAuth/consent flow; never collect ChatGPT passwords in the Revit window. Login does not automatically import this Project, its chats, or installed skills. The runtime must explicitly receive the skill and supporting resources. Restrict runtime tools/configuration and validate deterministic geometry actions; a prompt or skill alone is not security isolation. No authentication integration or credential creation has happened.
 

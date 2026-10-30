@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Page Include="../../src/FamilyCreator.Revit/CreatorWindow.xaml" Link="CreatorWindow.xaml"/>
+    <Page Include="../../src/FamilyCreator.Revit/ModelPickerDialog.xaml" Link="ModelPickerDialog.xaml"/>
+    <Compile Include="../../src/FamilyCreator.Revit/CreatorWindow.xaml.cs" Link="CreatorWindow.xaml.cs"/>
+    <Compile Include="../../src/FamilyCreator.Revit/CreatorWindow.ApiKey.cs" Link="CreatorWindow.ApiKey.cs"/>
+    <Compile Include="../../src/FamilyCreator.Revit/CreatorWindow.Workspace.cs" Link="CreatorWindow.Workspace.cs"/>
+    <Compile Include="../../src/FamilyCreator.Revit/CreatorWindow.Generation.cs" Link="CreatorWindow.Generation.cs"/>
+    <Compile Include="../../src/FamilyCreator.Revit/GeometryPreview.cs" Link="GeometryPreview.cs"/>
+    <Compile Include="../../src/FamilyCreator.Revit/CreateFamilyDialog.cs" Link="CreateFamilyDialog.cs"/>
+    <Compile Include="../../src/FamilyCreator.Revit/ModelPickerDialog.cs" Link="ModelPickerDialog.cs"/>
+    <ProjectReference Include="../../src/FamilyCreator.Generation/FamilyCreator.Generation.csproj"/>
+    <ProjectReference Include="../../src/FamilyCreator.Auth/FamilyCreator.Auth.csproj"/>
+  </ItemGroup>
+</Project>

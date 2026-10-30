@@ -32,7 +32,9 @@
 
 ## Decisions before implementation
 
-1. Audience: Steven-only prototype, internal Hemy deployment, or broader distribution. This determines authentication and packaging eligibility.
+Update: the user selected open-source distribution and MIT licensing. The ribbon/window shell has been built and installed. A sign-in-only milestone is now implemented and locally tested ahead of geometry work at the user's request; real browser authentication and live Revit verification remain pending. See `docs/authentication.md`. Remaining architecture decisions below are still proposals.
+
+1. Audience: Steven-only prototype, internal organization deployment, or broader distribution. This determines authentication and packaging eligibility.
 2. Approve the proposed workflow: launch from a project, generate in a separate family document, preview, save, optionally load. Family Editor refinement is deferred.
 3. Resolve the deliverable mismatch: the current skill promises a self-contained Dynamo graph; this UI proposes direct native generation. Preserve the existing Dynamo workflow and define a separate UI recipe contract, rather than silently changing the skill.
 4. Start with a modeless window and separate modal preview. A dockable panel is optional later. Reconfirm PreviewControl host/lifetime requirements against installed API documentation.

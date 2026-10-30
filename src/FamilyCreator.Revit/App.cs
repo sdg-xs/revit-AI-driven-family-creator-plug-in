@@ -26,7 +26,7 @@ public sealed class App : IExternalApplication
     {
         if (window is null)
         {
-            window = new CreatorWindow();
+            window = new CreatorWindow(new FamilyCreator.Auth.ChatGptConnection(), new FamilyCreator.Auth.ApiKeyConnection(), new FamilyBuildService());
             new WindowInteropHelper(window).Owner = application.MainWindowHandle;
             window.Closed += (_, _) => window = null;
             window.Show();

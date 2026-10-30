@@ -1,30 +1,279 @@
 <Window x:Class="FamilyCreator.Revit.CreatorWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Family Creator" Width="620" Height="420"
-        MinWidth="460" MinHeight="320" WindowStartupLocation="CenterOwner"
-        ShowInTaskbar="False" Background="#F5F7F9" FontFamily="Segoe UI">
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <StackPanel>
-            <TextBlock Text="FAMILY CREATOR" FontSize="12" FontWeight="SemiBold" Foreground="#256C91"/>
-            <TextBlock Text="Your family workspace" Margin="0,10,0,0" FontSize="26" FontWeight="SemiBold" Foreground="#182B38"/>
-        </StackPanel>
-        <Border Grid.Row="1" Margin="0,24,0,24" Padding="22" Background="White"
-                BorderBrush="#DDE4E9" BorderThickness="1" CornerRadius="8">
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Ready to get started" FontSize="18" FontWeight="SemiBold" Foreground="#182B38"/>
-                <TextBlock Margin="0,10,0,0" TextWrapping="Wrap" FontSize="14" Foreground="#556673"
-                           Text="Family Creator is connected to Revit. Product inputs, ChatGPT sign-in and family creation will be added in the next steps."/>
-            </StackPanel>
-        </Border>
-        <Grid Grid.Row="2">
-            <TextBlock Text="Revit 2027 · Family Creator" VerticalAlignment="Center" Foreground="#647582"/>
-            <Button Content="Close" HorizontalAlignment="Right" Padding="20,7" IsCancel="True" Click="Close_Click"/>
-        </Grid>
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:local="clr-namespace:FamilyCreator.Revit"
+ Title="Family Creator" Icon="{DynamicResource FamilyCreatorIcon}" Width="640" Height="720" MinWidth="420" MinHeight="480"
+ WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="#F7FAFF" FontFamily="Poppins, Arial" FontSize="14" Foreground="#252525">
+ <Window.Resources>
+  <DrawingImage x:Key="FamilyCreatorIcon">
+   <DrawingImage.Drawing>
+    <DrawingGroup>
+     <GeometryDrawing Brush="#DFF1F8" Geometry="M 16,2 L 29,9 L 29,23 L 16,30 L 3,23 L 3,9 Z">
+      <GeometryDrawing.Pen><Pen Brush="#1E6E9A" Thickness="2" LineJoin="Round"/></GeometryDrawing.Pen>
+     </GeometryDrawing>
+     <GeometryDrawing Geometry="M 3,9 L 16,16 L 29,9 M 16,16 L 16,30 M 10,5 L 23,12">
+      <GeometryDrawing.Pen><Pen Brush="#1E6E9A" Thickness="2" LineJoin="Round"/></GeometryDrawing.Pen>
+     </GeometryDrawing>
+    </DrawingGroup>
+   </DrawingImage.Drawing>
+  </DrawingImage>
+  <SolidColorBrush x:Key="Navy" Color="#002340"/>
+  <SolidColorBrush x:Key="Muted" Color="#6B7280"/>
+  <Style TargetType="Button">
+   <Setter Property="MinHeight" Value="44"/><Setter Property="Padding" Value="18,10"/><Setter Property="FontWeight" Value="SemiBold"/>
+   <Setter Property="Background" Value="{StaticResource Navy}"/><Setter Property="Foreground" Value="White"/>
+   <Setter Property="BorderBrush" Value="{StaticResource Navy}"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+    <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Border>
+    <ControlTemplate.Triggers>
+     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.85"/></Trigger>
+     <Trigger Property="IsPressed" Value="True"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.7"/></Trigger>
+     <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#3B82F6"/><Setter TargetName="ButtonBorder" Property="BorderThickness" Value="2"/></Trigger>
+     <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45"/></Trigger>
+    </ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+   <Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="{StaticResource Navy}"/><Setter Property="BorderBrush" Value="#D1D5DB"/>
+  </Style>
+  <Style TargetType="Hyperlink"><Setter Property="Foreground" Value="#1769E0"/></Style>
+  <Style x:Key="ConnectionOption" TargetType="RadioButton">
+   <Setter Property="MinHeight" Value="60"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="RadioButton">
+    <Border x:Name="ChoiceBorder" CornerRadius="8" Background="White" BorderBrush="#D8E4F3" BorderThickness="1" Padding="14,12">
+     <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+    </Border>
+    <ControlTemplate.Triggers>
+     <Trigger Property="IsChecked" Value="True"><Setter TargetName="ChoiceBorder" Property="Background" Value="#E6EDF3"/><Setter TargetName="ChoiceBorder" Property="BorderBrush" Value="#002340"/></Trigger>
+     <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ChoiceBorder" Property="BorderBrush" Value="#3B82F6"/><Setter TargetName="ChoiceBorder" Property="BorderThickness" Value="2"/></Trigger>
+     <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+    </ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style TargetType="ComboBox">
+   <Setter Property="Background" Value="White"/><Setter Property="BorderBrush" Value="#D1D5DB"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox">
+    <Grid>
+     <ToggleButton x:Name="DropDownToggle" Focusable="False" IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Background="White" BorderBrush="{TemplateBinding BorderBrush}">
+      <ToggleButton.Template><ControlTemplate TargetType="ToggleButton">
+       <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8">
+        <Path Data="M 0,0 L 4,4 L 8,0" Stroke="#6B7280" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
+       </Border>
+      </ControlTemplate></ToggleButton.Template>
+     </ToggleButton>
+     <ContentPresenter Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" Margin="12,8,34,8" VerticalAlignment="Center" IsHitTestVisible="False"/>
+     <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade">
+      <Border Background="White" BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="8" MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" Padding="4" Margin="0,4,0,0">
+       <ScrollViewer MaxHeight="240" CanContentScroll="True"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/></ScrollViewer>
+      </Border>
+     </Popup>
     </Grid>
+    <ControlTemplate.Triggers>
+     <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="DropDownToggle" Property="BorderBrush" Value="#3B82F6"/></Trigger>
+     <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+    </ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+ </Window.Resources>
+ <Grid Background="#F7FAFF">
+ <Grid x:Name="WelcomeScreen">
+  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="340" Margin="32">
+   <Image Source="{StaticResource FamilyCreatorIcon}" Width="56" Height="56" Margin="0,0,0,24" AutomationProperties.Name="Family Creator model icon"/>
+   <TextBlock Text="Welcome to Family Creator" FontSize="26" FontWeight="Bold" Foreground="{StaticResource Navy}" TextWrapping="Wrap" TextAlignment="Center"/>
+   <TextBlock Text="Connect to start your family workspace." Foreground="{StaticResource Muted}" FontSize="14" LineHeight="21" TextAlignment="Center" TextWrapping="Wrap" Margin="0,12,0,28"/>
+   <Button x:Name="WelcomeChatGptButton" Content="Log in with ChatGPT" Click="WelcomeChatGpt_Click" MinWidth="240" HorizontalAlignment="Center"/>
+   <TextBlock Text="or" Foreground="{StaticResource Muted}" FontSize="12" TextAlignment="Center" Margin="0,16"/>
+   <Button x:Name="WelcomeApiKeyButton" Content="Use API key" Click="WelcomeApiKey_Click" Style="{StaticResource SecondaryButton}" MinWidth="240" HorizontalAlignment="Center"/>
+   <TextBlock Text="Use your own OpenAI API key instead of browser sign-in." Foreground="{StaticResource Muted}" FontSize="11" LineHeight="18" TextWrapping="Wrap" TextAlignment="Center" Margin="12,16,12,0"/>
+  </StackPanel>
+ </Grid>
+ <Grid x:Name="ConnectionScreen" Visibility="Collapsed">
+  <Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+  <Border Background="{StaticResource Navy}">
+   <Grid Margin="20,28,20,20">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <StackPanel>
+     <Image Source="{StaticResource FamilyCreatorIcon}" Width="44" Height="44" HorizontalAlignment="Left" Margin="4,0,0,32" AutomationProperties.Name="Family Creator model icon"/>
+     <TextBlock Text="REVIT WORKSPACE" Foreground="#A8BACB" FontSize="10" FontWeight="SemiBold" Margin="8,0,0,12"/>
+     <Border Background="#476782" CornerRadius="7" Padding="12,13"><TextBlock Text="Account connection" Foreground="White" FontWeight="SemiBold" FontSize="13"/></Border>
+     <TextBlock Text="FAMILY CREATOR" Foreground="#A8BACB" FontSize="10" FontWeight="SemiBold" Margin="8,32,0,12"/>
+     <TextBlock Text="References → Family" Foreground="#CBD8E5" FontSize="12" Margin="8,0,0,8"/>
+     <TextBlock Text="Your next workspace" Foreground="#A8BACB" FontSize="11" Margin="8,0,0,0"/>
+    </StackPanel>
+    <StackPanel Grid.Row="2">
+     <Border BorderBrush="#476782" BorderThickness="0,1,0,0" Padding="0,16,0,0"><TextBlock Text="Made for Revit 2027" Foreground="#CBD8E5" FontSize="11"/></Border>
+     <TextBlock Text="Open source · MIT" Foreground="#A8BACB" FontSize="10" Margin="0,6,0,0"/>
+    </StackPanel>
+   </Grid>
+  </Border>
+  <Grid Grid.Column="1">
+   <Grid.RowDefinitions><RowDefinition Height="70"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Border Background="{StaticResource Navy}" Padding="28,0">
+    <Grid>
+     <TextBlock Text="Family Creator" Foreground="White" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     <Button x:Name="ReturnToWorkspaceButton" Content="Back to conversation" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="ReturnToWorkspace_Click" Visibility="Collapsed"/>
+    </Grid>
+   </Border>
+   <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="28,26,28,24">
+     <TextBlock Text="Connect your account" Foreground="{StaticResource Navy}" FontSize="26" FontWeight="Bold"/>
+     <TextBlock Text="Choose how Family Creator connects to OpenAI." Foreground="{StaticResource Muted}" Margin="0,8,0,24" TextWrapping="Wrap"/>
+     <Grid Margin="0,0,0,20">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <RadioButton x:Name="ChatGptOption" Content="ChatGPT sign-in" GroupName="ConnectionMethod" Style="{StaticResource ConnectionOption}" IsChecked="True" Checked="ConnectionMethod_Checked"/>
+      <RadioButton x:Name="ApiKeyOption" Grid.Column="2" Content="OpenAI API key" GroupName="ConnectionMethod" Style="{StaticResource ConnectionOption}" Checked="ConnectionMethod_Checked"/>
+     </Grid>
+     <StackPanel x:Name="ChatGptPanel">
+     <Border Background="White" BorderBrush="#D8E4F3" BorderThickness="1" CornerRadius="12" Padding="24">
+      <StackPanel>
+       <TextBlock Text="ChatGPT connection" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Navy}"/>
+       <TextBlock Margin="0,10,0,20" TextWrapping="Wrap" Foreground="{StaticResource Muted}" LineHeight="21" Text="Continue in your browser to sign in and approve access. Family Creator never asks for your ChatGPT password."/>
+       <Label Content="ChatGPT account" Target="{Binding ElementName=AccountPicker}" Padding="0,0,0,8" FontSize="13" FontWeight="SemiBold"/>
+       <ComboBox x:Name="AccountPicker" DisplayMemberPath="Label" MinHeight="44" Padding="10,8" FontSize="13" SelectionChanged="AccountPicker_SelectionChanged"/>
+       <Border x:Name="StatusPanel" Background="#F3F4F6" CornerRadius="8" Padding="12" Margin="0,16,0,20">
+        <TextBlock x:Name="ConnectionStatus" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap" Foreground="#4B5563" FontSize="12" LineHeight="19" Text="Not connected. Choose an account to continue."/>
+       </Border>
+       <WrapPanel>
+        <Button x:Name="SignInButton" Content="Continue with ChatGPT" Margin="0,0,8,8" Click="SignIn_Click"/>
+        <Button x:Name="SignOutButton" Content="Sign out" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="SignOut_Click" IsEnabled="False"/>
+        <Button x:Name="CancelSignInButton" Content="Cancel sign-in" Style="{StaticResource SecondaryButton}" Margin="0,0,0,8" Click="CancelSignIn_Click" Visibility="Collapsed"/>
+       </WrapPanel>
+       <TextBlock Margin="0,8,0,0" FontSize="12"><Hyperlink Click="ManageUsage_Click">Manage ChatGPT usage ↗</Hyperlink></TextBlock>
+      </StackPanel>
+     </Border>
+     <Expander x:Name="SignInHelp" Header="Having trouble signing in?" Margin="0,20,0,0" Foreground="{StaticResource Navy}" FontSize="13">
+      <Border Background="White" BorderBrush="#D8E4F3" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,12,0,0">
+       <StackPanel>
+        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="12" LineHeight="19" Text="If your browser shows a policy-denied error, ask your workspace administrator or OpenAI support to check third-party access and account eligibility. The Revit add-in cannot override that decision."/>
+        <TextBlock Margin="0,12,0,8" TextWrapping="Wrap" FontSize="12" Text="Paste the error code and request ID shown in the browser. Do not paste passwords or tokens."/>
+        <TextBox x:Name="BrowserErrorDetails" AutomationProperties.Name="Browser sign-in error details" MaxLength="4096" AcceptsReturn="True" MinHeight="72" MaxHeight="120" Padding="10" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+        <Button Content="Check sign-in error" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,12,0,0" Click="CheckBrowserError_Click"/>
+       </StackPanel>
+      </Border>
+     </Expander>
+     </StackPanel>
+     <Border x:Name="ApiKeyPanel" Visibility="Collapsed" Background="White" BorderBrush="#D8E4F3" BorderThickness="1" CornerRadius="12" Padding="24">
+      <StackPanel>
+       <TextBlock Text="Use your OpenAI API key" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Navy}"/>
+       <TextBlock Text="Connect directly without ChatGPT browser sign-in. API usage is billed to the key’s OpenAI project using its billing or credits." TextWrapping="Wrap" LineHeight="21" Foreground="{StaticResource Muted}" Margin="0,10,0,20"/>
+       <Label Content="API key" Target="{Binding ElementName=ApiKeyInput}" Padding="0,0,0,8" FontSize="13" FontWeight="SemiBold"/>
+       <Border BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="8" Padding="10,4">
+        <PasswordBox x:Name="ApiKeyInput" AutomationProperties.Name="OpenAI API key" MinHeight="36" MaxLength="4096" BorderThickness="0" VerticalContentAlignment="Center"/>
+       </Border>
+       <TextBlock Text="Stored encrypted for your Windows user. Paste a new key here to replace the saved key." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+       <Border Background="#F3F4F6" CornerRadius="8" Padding="12" Margin="0,16,0,20">
+        <TextBlock x:Name="ApiKeyStatus" Text="No API key saved." FontSize="12" TextWrapping="Wrap" LineHeight="19" Foreground="#4B5563" AutomationProperties.LiveSetting="Polite"/>
+       </Border>
+       <WrapPanel>
+        <Button x:Name="SaveApiKeyButton" Content="Save key" Margin="0,0,8,8" Click="SaveApiKey_Click"/>
+        <Button x:Name="TestApiKeyButton" Content="Test connection" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="TestApiKey_Click" IsEnabled="False"/>
+        <Button x:Name="RemoveApiKeyButton" Content="Remove key" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="RemoveApiKey_Click" IsEnabled="False"/>
+        <Button x:Name="CancelApiKeyButton" Content="Cancel check" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="CancelSignIn_Click" Visibility="Collapsed"/>
+       </WrapPanel>
+       <TextBlock Margin="0,8,0,0" FontSize="12"><Hyperlink Click="ApiKeyDashboard_Click">Open OpenAI API keys ↗</Hyperlink></TextBlock>
+       <TextBlock Margin="0,8,0,0" FontSize="12"><Hyperlink Click="ApiBilling_Click">API billing and credits ↗</Hyperlink></TextBlock>
+       <TextBlock Text="The connection check lists models only. It does not verify generation access, billing balance or family creation." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,16,0,0"/>
+      </StackPanel>
+     </Border>
+     <Button x:Name="OpenWorkspaceButton" Content="Open conversation" HorizontalAlignment="Left" Margin="0,20,0,0" Click="ReturnToWorkspace_Click" Visibility="Collapsed"/>
+    </StackPanel>
+   </ScrollViewer>
+   <Border Grid.Row="2" Background="White" BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Padding="28,12">
+    <TextBlock FontSize="12"><Hyperlink x:Name="OtherConnectionOptions" Click="OtherConnectionOptions_Click">Other connection options</Hyperlink></TextBlock>
+   </Border>
+  </Grid>
+ </Grid>
+ <Grid x:Name="ConversationScreen" Visibility="Collapsed">
+  <Grid.RowDefinitions><RowDefinition Height="72"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <Border Background="{StaticResource Navy}" Padding="20,12">
+   <Grid>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <Image Source="{StaticResource FamilyCreatorIcon}" Width="30" Height="30" Margin="0,0,12,0" AutomationProperties.Name="Family Creator model icon"/>
+    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+     <TextBlock Text="Family Creator" Foreground="White" FontWeight="SemiBold" FontSize="16"/>
+     <TextBlock x:Name="WorkspaceConnectionLabel" Text="Connected" Foreground="#CBD8E5" FontSize="11" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+    </StackPanel>
+    <Button x:Name="WorkspaceSettingsButton" Grid.Column="2" Content="⚙  Settings" Style="{StaticResource SecondaryButton}" Padding="12,8" Click="WorkspaceSettings_Click" AutomationProperties.Name="Connection settings"/>
+   </Grid>
+  </Border>
+  <Grid Grid.Row="1" Margin="20,0">
+   <ScrollViewer x:Name="ResponseScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Conversation responses">
+    <StackPanel>
+    <ItemsControl x:Name="ConversationMessages" Margin="0,20" MaxWidth="900" HorizontalAlignment="Stretch">
+     <ItemsControl.ItemTemplate>
+      <DataTemplate>
+       <Border Background="White" BorderBrush="#D8E4F3" BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+        <TextBlock Text="{Binding}" TextWrapping="Wrap" LineHeight="23"/>
+       </Border>
+      </DataTemplate>
+     </ItemsControl.ItemTemplate>
+    </ItemsControl>
+     <Border x:Name="PreviewCard" Visibility="Collapsed" Background="White" BorderBrush="#D8E4F3" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,0,0,16">
+      <StackPanel>
+       <TextBlock Text="Geometry preview" FontWeight="SemiBold" Foreground="{StaticResource Navy}" Margin="0,0,0,8"/>
+       <local:GeometryPreview x:Name="NativeGeometryView" Height="260" AutomationProperties.Name="Geometry preview. Drag to orbit, scroll to zoom, or use arrow and plus/minus keys."/>
+       <TextBlock x:Name="PreviewDimensions" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+       <TextBlock Text="Drag to orbit · Scroll to zoom. Inspect proportions and joints before creating." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,6,0,10"/>
+       <Button x:Name="CreateFamilyButton" Content="Create family…" HorizontalAlignment="Right" Click="CreateFamily_Click"/>
+      </StackPanel>
+     </Border>
+    </StackPanel>
+   </ScrollViewer>
+   <StackPanel x:Name="ConversationEmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="420" Margin="16">
+    <StackPanel.Style><Style TargetType="StackPanel"><Style.Triggers>
+     <DataTrigger Binding="{Binding HasItems, ElementName=ConversationMessages}" Value="True"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+    </Style.Triggers></Style></StackPanel.Style>
+    <Image Source="{StaticResource FamilyCreatorIcon}" Width="56" Height="56" Margin="0,0,0,20" Opacity="0.8"/>
+    <TextBlock Text="What would you like to create?" FontSize="23" FontWeight="SemiBold" Foreground="{StaticResource Navy}" TextAlignment="Center" TextWrapping="Wrap"/>
+    <TextBlock Text="Attach product references and describe your family. Review the geometry preview before creating it." FontSize="13" LineHeight="21" Foreground="{StaticResource Muted}" Margin="0,12,0,0" TextAlignment="Center" TextWrapping="Wrap"/>
+   </StackPanel>
+  </Grid>
+  <Grid x:Name="ComposerArea" Grid.Row="2" Margin="20,12,20,16" MaxWidth="900" HorizontalAlignment="Stretch">
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Border Background="White" BorderBrush="#D1D5DB" BorderThickness="1" CornerRadius="16" Padding="16">
+    <Grid>
+     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+     <ScrollViewer MaxHeight="100" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <ItemsControl x:Name="ReferenceAttachments">
+       <ItemsControl.ItemTemplate><DataTemplate>
+        <Border Background="#F7FAFF" CornerRadius="8" Padding="8,4" Margin="0,0,0,8">
+         <DockPanel>
+          <Button DockPanel.Dock="Right" Content="×" Tag="{Binding}" Click="RemoveAttachment_Click" Style="{StaticResource SecondaryButton}" Padding="8,2" MinHeight="28" AutomationProperties.Name="Remove reference"/>
+          <TextBlock Text="{Binding Name}" ToolTip="{Binding FilePath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,8,0"/>
+         </DockPanel>
+        </Border>
+       </DataTemplate></ItemsControl.ItemTemplate>
+      </ItemsControl>
+     </ScrollViewer>
+     <Grid Grid.Row="1">
+      <TextBox x:Name="PromptInput" AutomationProperties.Name="Family instructions and product references" MaxLength="40000" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="72" MaxHeight="160" VerticalScrollBarVisibility="Auto" Background="Transparent" BorderThickness="0" FontSize="14" Padding="0" TextChanged="PromptInput_TextChanged" PreviewKeyDown="PromptInput_PreviewKeyDown"/>
+      <TextBlock x:Name="PromptPlaceholder" Text="Describe a family, or paste product references…" Foreground="#6B7280" FontSize="14" TextWrapping="Wrap" IsHitTestVisible="False"/>
+     </Grid>
+     <Grid Grid.Row="2" Margin="0,12,0,0">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <Button x:Name="AddAttachmentButton" Content="+" FontSize="24" Width="40" Padding="0" Margin="0,0,10,0" Style="{StaticResource SecondaryButton}" Click="AddAttachment_Click" AutomationProperties.Name="Attach reference files" ToolTip="Attach images, PDFs or text references"/>
+      <TextBlock x:Name="AttachmentStatus" Grid.Column="1" Text="Draft · stays in this window" FontSize="11" Foreground="{StaticResource Muted}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,12,0" AutomationProperties.LiveSetting="Polite"/>
+      <Button x:Name="SendPromptButton" Grid.Column="2" Content="↑" FontSize="20" Width="44" Padding="0" IsEnabled="False" Click="SendPrompt_Click" AutomationProperties.Name="Send message and references" ToolTip="Send your prompt and attached references to OpenAI to generate a preview." ToolTipService.ShowOnDisabled="True"/>
+     </Grid>
+    </Grid>
+   </Border>
+   <StackPanel Grid.Row="1" Margin="0,10,0,0">
+    <DockPanel>
+     <Button x:Name="NewConversationButton" DockPanel.Dock="Right" Content="New chat" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="8,0,0,0" Click="NewConversation_Click"/>
+     <Button x:Name="CancelGenerationButton" DockPanel.Dock="Right" Content="Cancel" Style="{StaticResource SecondaryButton}" Padding="8,4" Margin="8,0,0,0" Click="CancelGeneration_Click" Visibility="Collapsed"/>
+     <Button x:Name="ChooseModelButton" Style="{StaticResource SecondaryButton}" Padding="12,8" HorizontalContentAlignment="Stretch" Click="ChooseModel_Click" AutomationProperties.Name="Choose generation model">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+       <Border Width="26" Height="26" CornerRadius="7" Background="#EAF2F8" Margin="0,0,10,0"><TextBlock Text="✦" Foreground="#226B95" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+       <TextBlock x:Name="SelectedModelLabel" Grid.Column="1" Text="Choose a model" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+       <Path Grid.Column="2" Data="M 0,0 L 4,4 L 8,0" Stroke="#60788B" StrokeThickness="1.5" VerticalAlignment="Center" Margin="10,0,0,0"/>
+      </Grid>
+     </Button>
+    </DockPanel>
+    <TextBlock x:Name="ComposerHint" FontSize="11" Foreground="{StaticResource Navy}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+    <TextBlock x:Name="GenerationStatus" Text="Send shares the prompt and attached files with OpenAI. API charges apply." FontSize="11" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite"/>
+   </StackPanel>
+  </Grid>
+ </Grid>
+ </Grid>
 </Window>

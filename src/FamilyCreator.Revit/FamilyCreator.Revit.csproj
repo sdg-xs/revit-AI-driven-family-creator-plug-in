@@ -5,10 +5,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RevitInstallDir Condition="'$(RevitInstallDir)' == ''">C:\Program Files\Autodesk\Revit 2027</RevitInstallDir>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="RevitAPI"><HintPath>$(RevitInstallDir)\RevitAPI.dll</HintPath><Private>false</Private><ExternallyResolved>true</ExternallyResolved></Reference>
     <Reference Include="RevitAPIUI"><HintPath>$(RevitInstallDir)\RevitAPIUI.dll</HintPath><Private>false</Private><ExternallyResolved>true</ExternallyResolved></Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FamilyCreator.Auth\FamilyCreator.Auth.csproj" />
+    <ProjectReference Include="..\FamilyCreator.Generation\FamilyCreator.Generation.csproj" />
   </ItemGroup>
 </Project>
